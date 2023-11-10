@@ -318,7 +318,20 @@ public:
     {
         if (SoloCraftEnable && SoloCraftAnnounceModule)
         {
-            ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00SoloCraft |rmodule.");
+            WorldSession* session = player->GetSession();
+            std::string message = "";
+            switch (session->GetSessionDbLocaleIndex())
+            {
+            case LOCALE_ruRU:
+            {
+                message = "На сервере запущен модуль";
+                break;
+            }
+            default:
+                message = "This server is running the";
+                break;
+            }
+            ChatHandler(player->GetSession()).SendSysMessage(message + " |cff4CFF00SoloCraft |r");
         }
     }
 
@@ -528,6 +541,36 @@ public:
 
             int SpellPowerBonus = 0;
 
+            // Locales ruRU / enGB
+            WorldSession* session = player->GetSession();
+            std::string msg1 = "";
+            std::string msg2 = "";
+            std::string msg3 = "";
+            std::string msg4 = "";
+            std::string msg5 = "";
+            std::string msg6 = "";
+            switch (session->GetSessionDbLocaleIndex())
+            {
+            case LOCALE_ruRU:
+            {
+                msg1 = " вошел %s - Компенсация сложности: %0.2f. Бонус силы заклинаний: %i. Вес баланса классов: %i.  Прирост опыта: |cffFF0000Отключено";
+                msg2 = " вошел %s - Компенсация сложности: %0.2f. Бонус силы заклинаний: %i. Вес баланса классов: %i.  Баланс опыта: |cffFF0000Отключено";
+                msg3 = " вошел %s - Компенсация сложности: %0.2f. Бонус силы заклинаний: %i. Вес баланса классов: %i.  Баланс опыта: |cff4CFF00Включено";
+                msg4 = " вошел %s - |cffFF0000На вас наложен дебафф из-за смещения: %0.2f вес баланса классов: %i. |cffFF8000Члены группы, уже находящиеся внутри, получают полный компенсатор усиления подземелья. К заклинателям не будет применено усиление силы заклинаний. ВСЕ члены группы должны выйти из подземелья и войти снова, чтобы получить сбалансированную компенсацию.";
+                msg5 = " вошел %s - |cffFF0000На вас наложен дебафф из-за смещения: %0.2f вес баланса классов: %i и никакой опыт не будет начислен. |cffFF8000Члены группы, уже находящиеся внутри, получают полный компенсатор усиления подземелья. К заклинателям не будет применено усиление силы заклинаний. ВСЕ члены группы должны выйти из подземелья и войти снова, чтобы получить сбалансированную компенсацию.";
+                msg6 = " вошел %s - |cffFF0000Бафф не наложен. |cffFF8000 Ваш уровень выше порога максимального уровня (%i) для этого подземелья.";
+                break;
+            }
+            default:
+                msg1 = " entered %s  - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i.  XP Gain: |cffFF0000Disabled";
+                msg2 = " entered %s  - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i.  XP Balancing: |cffFF0000Disabled";
+                msg3 = " entered %s  - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i.  XP Balancing: |cff4CFF00Enabled";
+                msg4 = " entered %s  - |cffFF0000BE ADVISED - You have been debuffed by offset: %0.2f with a Class Balance Weight: %i. |cffFF8000 A group member already inside has the dungeon's full buff offset.  No Spellpower buff will be applied to spell casters.  ALL group members must exit the dungeon and re-enter to receive a balanced offset.";
+                msg5 = " entered %s  - |cffFF0000BE ADVISED - You have been debuffed by offset: %0.2f with a Class Balance Weight: %i and no XP will be awarded. |cffFF8000 A group member already inside has the dungeon's full buff offset.  No Spellpower buff will be applied to spell casters.  ALL group members must exit the dungeon and re-enter to receive a balanced offset.";
+                msg6 = " entered %s  - |cffFF0000You have not been buffed. |cffFF8000 Your level is higher than the max level (%i) threshold for this dungeon.";
+                break;
+            }
+
             // Check for an existing No XP Gain flag - other mod compatibility 
             if (player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
             {
@@ -537,7 +580,6 @@ public:
             // If a player is too high level for dungeon don't buff but if in a group will count towards the group offset balancing.
             if (player->getLevel() <= dunLevel + SolocraftLevelDiff)
             {
-
                 // Get Current members total difficulty offset and if it exceeds the difficulty offset of the dungeon then debuff new group members coming in until all members leave and re-enter. This happens when a player already inside dungeon invite others to the group but the player already has the full difficulty offset.
                 float GroupDifficulty = GetGroupDifficulty(player);
 
@@ -651,19 +693,19 @@ public:
                     // Announce to player - Buff
                     if (!SolocraftXPEnabled)
                     {
-                        ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << " entered %s  - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i.  XP Gain: |cffFF0000Disabled";
+                        ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << msg1;
                         ChatHandler(player->GetSession()).PSendSysMessage(ss.str().c_str(), map->GetMapName(), difficulty, SpellPowerBonus, classBalance);
                     }
                     else
                     {
                         if (!SolocraftXPBalEnabled)
                         {
-                            ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << " entered %s  - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i.  XP Balancing: |cffFF0000Disabled";
+                            ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << msg2;
                             ChatHandler(player->GetSession()).PSendSysMessage(ss.str().c_str(), map->GetMapName(), difficulty, SpellPowerBonus, classBalance);
                         }
                         else
                         {
-                            ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << " entered %s  - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i.  XP Balancing: |cff4CFF00Enabled";
+                            ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << msg3;
                             ChatHandler(player->GetSession()).PSendSysMessage(ss.str().c_str(), map->GetMapName(), difficulty, SpellPowerBonus, classBalance);
                         }
                     }
@@ -673,12 +715,12 @@ public:
                     // Announce to player - Debuff
                     if (!SolocraftXPBalEnabled && SolocraftXPEnabled)
                     {
-                        ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << " entered %s  - |cffFF0000BE ADVISED - You have been debuffed by offset: %0.2f with a Class Balance Weight: %i. |cffFF8000 A group member already inside has the dungeon's full buff offset.  No Spellpower buff will be applied to spell casters.  ALL group members must exit the dungeon and re-enter to receive a balanced offset.";
+                        ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << msg4;
                         ChatHandler(player->GetSession()).PSendSysMessage(ss.str().c_str(), map->GetMapName(), difficulty, classBalance);
                     }
                     else
                     {
-                        ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << " entered %s  - |cffFF0000BE ADVISED - You have been debuffed by offset: %0.2f with a Class Balance Weight: %i and no XP will be awarded. |cffFF8000 A group member already inside has the dungeon's full buff offset.  No Spellpower buff will be applied to spell casters.  ALL group members must exit the dungeon and re-enter to receive a balanced offset.";
+                        ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << msg5;
                         ChatHandler(player->GetSession()).PSendSysMessage(ss.str().c_str(), map->GetMapName(), difficulty, classBalance);
                     }
                 }
@@ -689,7 +731,7 @@ public:
             else
             {
                 // Announce to player - Over Max Level Threshold
-                ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << " entered %s  - |cffFF0000You have not been buffed. |cffFF8000 Your level is higher than the max level (%i) threshold for this dungeon.";
+                ss << "|cffFF0000[SoloCraft] |cffFF8000" << player->GetName() << msg6;
                 ChatHandler(player->GetSession()).PSendSysMessage(ss.str().c_str(), map->GetMapName(), dunLevel + SolocraftLevelDiff);
                 ClearBuffs(player); // Check to revert player back to normal
             }
