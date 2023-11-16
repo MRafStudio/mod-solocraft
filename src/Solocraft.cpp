@@ -319,19 +319,17 @@ public:
         if (SoloCraftEnable && SoloCraftAnnounceModule)
         {
             WorldSession* session = player->GetSession();
-            std::string message = "";
             switch (session->GetSessionDbLocaleIndex())
             {
             case LOCALE_ruRU:
             {
-                message = "На сервере запущен модуль";
+                ChatHandler(player->GetSession()).SendSysMessage("На сервере запущен модуль |cff4CFF00SoloCraft |r");
                 break;
             }
             default:
-                message = "This server is running the";
+                ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00SoloCraft |rmodule.");
                 break;
             }
-            ChatHandler(player->GetSession()).SendSysMessage(message + " |cff4CFF00SoloCraft |r");
         }
     }
 
